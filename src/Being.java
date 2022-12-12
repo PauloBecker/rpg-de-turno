@@ -1,3 +1,7 @@
 package rpgturnos;
 
-public interface Being {}
+public interface Being {
+	void atk();
+	void sup();
+	void stat();
+}
