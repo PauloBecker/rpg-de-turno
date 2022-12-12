@@ -11,3 +11,4 @@ public class Character1 extends Character {
 	public void sup() {}
 	public void stat() {}
 }
+	
