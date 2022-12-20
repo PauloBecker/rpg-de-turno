@@ -1,8 +1,12 @@
 package rpgturnos;
 
-public class Effect {
+import java.io.Serializable;
+
+public class Effect implements Serializable {
 	public String name;
 	public int duration;
+
+	public Effect() {}
 
 	public Effect(String name, int duration) {
 		this.name = name;

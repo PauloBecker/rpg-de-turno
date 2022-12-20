@@ -1,9 +1,13 @@
 package rpgturnos;
 
-public class Attack {
-	public String name;
-	public int damage;
-	public Effect effect;
+import java.io.Serializable;
+
+public class Attack implements Serializable {
+	private String name;
+	private int damage;
+	private Effect effect;
+
+	public Attack() {}
 
 	public Attack(String name, int damage, Effect effect) {
 		this.name = name;

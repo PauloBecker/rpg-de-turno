@@ -1,16 +1,20 @@
 package rpgturnos;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Agent {
-	public String name;
-	public int hp, maxHp, lvl, exp, maxExp, mp, maxMp, ultMp;
-	public Attack attack, ultimate;
-	public ArrayList<Effect> effectsList;
+public class Agent implements Serializable {
+	private String name;
+	private int hp, maxHp, lvl, exp, maxExp, mp, maxMp, ultMp;
+	private Attack attack, ultimate;
+	private ArrayList<Effect> effectsList;
+
+	public Agent() {}
 
 	public Agent(	String name,
 					int hp, int maxHp, int lvl, int exp, int maxExp, int mp, int maxMp, int ultMp,
-					Attack attack, Attack ultimate, ArrayList<Effect> effectsList) {
+					Attack attack, Attack ultimate,
+					ArrayList<Effect> effectsList) {
 		this.name = name;
 		this.hp = hp;
 		this.maxHp = maxHp;
@@ -43,29 +47,33 @@ public class Agent {
 	public void setMaxHp (int maxHp) { this.maxHp = maxHp; }
 	public void setLvl (int lvl) { this.lvl = lvl; }
 	public void setExp (int exp) { this.exp = exp; }
-	public void setMaxExp (int maxExp) { this.maxExp = exp; }
+	public void setMaxExp (int maxExp) { this.maxExp = maxExp; }
 	public void setMp (int mp) { this.mp = mp; }
-	public void setMaxMp (int maxMp) { this.maxMp = mp; }
+	public void setMaxMp (int maxMp) { this.maxMp = maxMp; }
 	public void setUltMp (int ultMp) { this.ultMp = ultMp; }
 	public void setAttack (Attack attack) { this.attack = attack; }
 	public void setUltimate (Attack ultimate) { this.ultimate = ultimate; }
 	public void setEffectsList (ArrayList<Effect> effectsList) { this.effectsList = effectsList; }
 
-	public String printEffectsList() {
-		String allEffects = "";
+	public void addEffect(Effect effect) {
+		effectsList.add(effect);
+	}
 
-		if (effectsList.size() != 0) {
-			allEffects = "";
+	public String arrayListToString(ArrayList list) {
+		String out = "";
 
-			for (int i = 0; i < effectsList.size(); i++) {
-				allEffects += effectsList.get(i).toString();
+		if (list.size() != 0) {
+			out = "";
 
-				if (i != effectsList.size() - 1)
-					allEffects += ", ";
+			for (int i = 0; i < list.size(); i++) {
+				out += list.get(i).toString();
+
+				if (i != list.size() - 1)
+					out += ", ";
 			}
 		}
 
-		return allEffects;
+		return out;
 	}
 
 	public String toString() {
@@ -81,7 +89,7 @@ public class Agent {
 					"\"ultMp\": " + ultMp + ", " +
 					"\"attack\": " + attack.toString() + ", " +
 					"\"ultimate\": " + ultimate.toString() + ", " +
-					"\"effects\": [" + printEffectsList() + "]" +
+					"\"effects\": [" + arrayListToString(effectsList) + "]" +
 				"}";
 	}
 }
