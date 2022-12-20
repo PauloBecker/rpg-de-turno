@@ -7,14 +7,16 @@ public class Agent implements Serializable {
 	private String name;
 	private int hp, maxHp, lvl, exp, maxExp, mp, maxMp, ultMp;
 	private Attack attack, ultimate;
-	private ArrayList<Effect> effectsList;
+	private ArrayList<Item> items;
+	private ArrayList<Effect> effects;
 
 	public Agent() {}
 
 	public Agent(	String name,
 					int hp, int maxHp, int lvl, int exp, int maxExp, int mp, int maxMp, int ultMp,
 					Attack attack, Attack ultimate,
-					ArrayList<Effect> effectsList) {
+					ArrayList<Item> items,
+					ArrayList<Effect> effects) {
 		this.name = name;
 		this.hp = hp;
 		this.maxHp = maxHp;
@@ -26,7 +28,8 @@ public class Agent implements Serializable {
 		this.ultMp = ultMp;
 		this.attack = attack;
 		this.ultimate = ultimate;
-		this.effectsList = effectsList;
+		this.items = items;
+		this.effects = effects;
 	}
 
 	public String getName () { return name; }
@@ -40,7 +43,8 @@ public class Agent implements Serializable {
 	public int getUltMp () { return ultMp; }
 	public Attack getAttack () { return attack; }
 	public Attack getUltimate () { return ultimate; }
-	public ArrayList<Effect> getEffectsList () { return effectsList; }
+	public ArrayList<Item> getItems () { return items; }
+	public ArrayList<Effect> getEffects () { return effects; }
 
 	public void setName (String name) { this.name = name; }
 	public void setHp (int hp) { this.hp = hp; }
@@ -53,10 +57,32 @@ public class Agent implements Serializable {
 	public void setUltMp (int ultMp) { this.ultMp = ultMp; }
 	public void setAttack (Attack attack) { this.attack = attack; }
 	public void setUltimate (Attack ultimate) { this.ultimate = ultimate; }
-	public void setEffectsList (ArrayList<Effect> effectsList) { this.effectsList = effectsList; }
+	public void setitems (ArrayList<Item> items) { this.items = items; }
+	public void setEffects (ArrayList<Effect> effects) { this.effects = effects; }
+
+	public void addItem(Item item) {
+		items.add(item);
+	}
 
 	public void addEffect(Effect effect) {
-		effectsList.add(effect);
+		effects.add(effect);
+	}
+
+	public void checkLevel(int gainedExp) {
+		exp += gainedExp;
+
+		while (exp >= maxExp) {
+			hp *= 2;
+			maxHp *= 2;
+			lvl++;
+			exp -= maxExp;
+			maxExp *= 2;
+			mp *= 2;
+			maxMp *= 2;
+			ultMp *= 2;
+			attack.setDamage(attack.getDamage() * 2);
+			ultimate.setDamage(ultimate.getDamage() * 2);
+		}
 	}
 
 	public String arrayListToString(ArrayList list) {
@@ -89,7 +115,8 @@ public class Agent implements Serializable {
 					"\"ultMp\": " + ultMp + ", " +
 					"\"attack\": " + attack.toString() + ", " +
 					"\"ultimate\": " + ultimate.toString() + ", " +
-					"\"effects\": [" + arrayListToString(effectsList) + "]" +
+					"\"items\": [" + arrayListToString(items) + "]" + ", " +
+					"\"effects\": [" + arrayListToString(effects) + "]" +
 				"}";
 	}
 }

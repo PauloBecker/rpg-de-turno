@@ -3,33 +3,41 @@ package rpgturnos;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Scanner;
-import java.lang.Math;
+import java.util.Random;
 
 public class Game implements Serializable {
 	private transient static Scanner kbd = new Scanner(System.in);
+	private transient Random rand = new Random();
+
 	private ArrayList<String> story;
-	private  ArrayList<Agent> players;
+	private ArrayList<Agent> players;
 	private ArrayList<Agent> enemies;
 	private ArrayList<Agent> bosses;
+	private ArrayList<Item> items = new ArrayList<Item>();
+	private ArrayList<Effect> effects = new ArrayList<Effect>();
 	private Agent player, enemy;
-	private int enemiesDefeated, bossesDefeated;
+	private int enemiesDefeated, bossesDefeated, storyCounter;
 	private boolean gameOver, enemyDefeated, bossFight;
 
 	public Game() {}
 
 	public Game(	ArrayList<String> story,
 					ArrayList<Agent> players, ArrayList<Agent> enemies, ArrayList<Agent> bosses,
+					ArrayList<Item> items, ArrayList<Effect> effects,
 					Agent player, Agent enemy,
-					int enemiesDefeated, int bossesDefeated,
+					int enemiesDefeated, int bossesDefeated, int storyCounter,
 					boolean gameOver, boolean enemyDefeated, boolean bossFight) {
 		this.story = story;
 		this.players = players;
 		this.enemies = enemies;
 		this.bosses = bosses;
+		this.items = items;
+		this.effects = effects;
 		this.player = player;
 		this.enemy = enemy;
 		this.enemiesDefeated = enemiesDefeated;
 		this.bossesDefeated = bossesDefeated;
+		this.storyCounter = storyCounter;
 		this.gameOver = gameOver;
 		this.enemyDefeated = enemyDefeated;
 		this.bossFight = bossFight;
@@ -39,6 +47,8 @@ public class Game implements Serializable {
 	public ArrayList<Agent> getPlayers() { return players; }
 	public ArrayList<Agent> getEnemies() { return enemies; }
 	public ArrayList<Agent> getBosses() { return bosses; }
+	public ArrayList<Item> getItems() { return items; }
+	public ArrayList<Effect> getEffects() { return effects; }
 	public Agent getPlayer() { return player; }
 	public Agent getEnemy() { return enemy; }
 	public int getEnemiesDefeated() { return enemiesDefeated; }
@@ -51,6 +61,8 @@ public class Game implements Serializable {
 	public void setPlayers(ArrayList<Agent> players) { this.players = players; }
 	public void setEnemies(ArrayList<Agent> enemies) { this.enemies = enemies; }
 	public void setBosses(ArrayList<Agent> bosses) { this.bosses = bosses; }
+	public void setItems(ArrayList<Item> items) { this.items = items; }
+	public void setEffects(ArrayList<Effect> effects) { this.effects = effects; }
 	public void setPlayer(Agent player) { this.player = player; }
 	public void setEnemy(Agent enemy) { this.enemy = enemy; }
 	public void setEnemiesDefeated(int enemiesDefeated) { this.enemiesDefeated = enemiesDefeated; }
@@ -58,6 +70,10 @@ public class Game implements Serializable {
 	public void setGameOver(boolean gameOver) { this.gameOver = gameOver; }
 	public void setEnemyDefeated(boolean enemyDefeated) { this.enemyDefeated = enemyDefeated; }
 	public void setBossFight(boolean bossFight) { this.bossFight = bossFight; }
+
+	public void addText(String text) {
+		story.add(text);
+	}
 
 	public void addPlayer(Agent agent) {
 		players.add(agent);
@@ -69,6 +85,14 @@ public class Game implements Serializable {
 
 	public void addBoss(Agent agent) {
 		bosses.add(agent);
+	}
+
+	public void addItem(Item item) {
+		items.add(item);
+	}
+
+	public void addEffect(Effect effect) {
+		effects.add(effect);
 	}
 
 	public String arrayListToString(ArrayList list) {
@@ -93,6 +117,8 @@ public class Game implements Serializable {
 					"\"story\": " + "[" + arrayListToString(story) + "], " +
 					"\"players\": " + "[" + arrayListToString(players) + "], " +
 					"\"bosses\": " + "[" + arrayListToString(bosses) + "], " +
+					"\"items\": " + "[" + arrayListToString(items) + "], " +
+					"\"effects\": " + "[" + arrayListToString(effects) + "], " +
 					"\"player\": " + player.toString() + ", " +
 					"\"enemy\": " + enemy.toString() + ", " +
 					"\"enemiesDefeated\": " + enemiesDefeated + ", " +
@@ -103,38 +129,75 @@ public class Game implements Serializable {
 				"}";
 	}
 
+	public int choose(int bound) {
+		return rand.nextInt(bound);
+	}
+
 	public int randomize() {
-		return (int) Math.random() * 100;
+		return choose(100);
 	}
 
 	public void checkEffects(Agent agent) {
 		Effect effect;
+		Attack attack;
 
-		for (int i = 0; i < agent.getEffectsList().size(); i++) {
-			effect = agent.getEffectsList().get(i);
+		for (int i = 0; i < agent.getEffects().size(); i++) {
+			effect = agent.getEffects().get(i);
 
 			if (effect.getDuration() == 0)
-				agent.getEffectsList().remove(i);
+				agent.getEffects().remove(i);
 
 			else {
 				switch (effect.getName()) {
 					case "poison":
-						agent.setHp(agent.getHp() - 5);
-						break;
-
 					case "ignite":
-						agent.setHp(agent.getHp() - 100);
+						agent.setHp(agent.getHp() - 10);
 						break;
 
 					case "shock":
 						agent.setHp(agent.getHp() - 100);
 						break;
+					
+					case "health":
+						agent.setHp(agent.getHp() + 100);
+						break;
+
+					case "mana":
+						agent.setMp(agent.getMp() + 100);
+						break;
+					
+					case "strength":
+						attack = agent.getAttack();
+						attack.setDamage(attack.getDamage() + 50);
+						agent.setAttack(attack);
+						break;
 
 					default:
+						System.out.println("invalid effect!");
 						break;
 				}
 				effect.setDuration(effect.getDuration() - 1);
 			}
+		}
+	}
+
+	public void applyEffect(Effect effect, Agent agent) {
+		Effect found;
+		int rand;
+
+		rand = randomize();
+
+		if (0 <= rand && rand < 25 && !effect.getName().equals("none")) {
+			
+			System.out.println(	"it gave out the " + effect.getName() +
+								" effect for " + effect.getDuration() + " turns!");
+			found = null;
+			for (int i = 0; i < agent.getEffects().size(); i++)
+				if (agent.getEffects().get(i).getName().equals(effect.getName()))
+					found = agent.getEffects().get(i);
+
+			if (found != null) found.setDuration(effect.getDuration());
+			else agent.addEffect(effect);
 		}
 	}
 
@@ -143,39 +206,22 @@ public class Game implements Serializable {
 		gameOver = player.getHp() <= 0;
 
 		if (enemyDefeated) {
-			checkLevel();
+			player.checkLevel(enemy.getExp());
+			if (enemy.getItems().size() > 0)
+				for (int i = 0; i < enemy.getItems().size(); i++)
+					player.addItem(enemy.getItems().get(i));
 			enemiesDefeated += 1;
 		}
 	}
 
-	public void checkLevel() {
-		Attack attack;
-
-		player.setExp(player.getExp() + enemy.getExp());
-
-		while (player.getExp() >= player.getMaxExp()) {
-			player.setHp(player.getHp() * 2);
-			player.setMaxHp(player.getMaxHp() * 2);
-			player.setLvl(player.getLvl() + 1);
-			player.setExp(player.getExp() - player.getMaxExp());
-			player.setMaxExp(player.getMaxExp() * 2);
-			player.setMp(player.getMp() * 2);
-			player.setMaxMp(player.getMaxMp() * 2);
-			player.setUltMp(player.getUltMp() * 2);
-
-			attack = player.getAttack();
-			attack.setDamage(attack.getDamage() * 2);
-			player.setAttack(attack);
-
-			attack = player.getUltimate();
-			attack.setDamage(attack.getDamage() * 2);
-			player.setUltimate(attack);
-
-			System.out.println("player has levelled up!");
+	public void showStory() {
+		if (story.size() > 0 && storyCounter < story.size()) {
+			System.out.println(story.get(storyCounter));
+			storyCounter++;
 		}
 	}
 
-	public void printPlayers() {
+	public void showPlayers() {
 		System.out.println("players:");
 		for (int i = 0; i < players.size(); i++)
 			System.out.println("\t" + i + " - " + players.get(i).toString());
@@ -185,7 +231,7 @@ public class Game implements Serializable {
 		int option;
 
 		while (true) {
-			printPlayers();
+			showPlayers();
 			System.out.print("option: ");
 			option = kbd.nextInt();
 
@@ -207,34 +253,74 @@ public class Game implements Serializable {
 			else {
 				attacker.setMp(attacker.getMp() - attacker.getUltMp());
 				attack = attacker.getUltimate();
-
-				if (defending)
+				System.out.println(	attacker.getName() +
+									" used ultimate " + attack.getName() + "!");
+	
+				if (defending) {
+					System.out.println(target.getName() + " defended!");
 					target.setHp(target.getHp() - attack.getDamage() / 4);
-				else
-					target.setHp(target.getHp() - attack.getDamage());
+				} else target.setHp(target.getHp() - attack.getDamage());
 
-				if (!attack.getEffect().getName().equals("none"))
-					target.addEffect(attack.getEffect());
+				applyEffect(attack.getEffect(), target);
 			}
 		} else {
 			attack = attacker.getAttack();
-			if (defending)
+			System.out.println(	attacker.getName() +
+								" used " + attack.getName() + "!");
+
+			if (defending) {
+				System.out.println(target.getName() + " defended!");
 				target.setHp(target.getHp() - attack.getDamage() / 4);
-			else
-				target.setHp(target.getHp() - attack.getDamage());
+			} else target.setHp(target.getHp() - attack.getDamage());
 
-			if (!attack.getEffect().getName().equals("none"))
-				target.addEffect(attack.getEffect());
+			applyEffect(attack.getEffect(), target);
 		}
-
 		checkHealth();
+	}
+
+	public Item chooseItem() {
+		return items.get(choose(items.size()));
+	}
+
+	public Agent chooseEnemy() {
+		int rand;
+		Agent chosen;
+
+		chosen = enemies.get(choose(enemies.size()));
+
+		rand = randomize();
+		if (0 <= rand && rand < 25) chosen.addItem(chooseItem());
+		rand = randomize();
+		if (0 <= rand && rand < 25) chosen.addItem(chooseItem());
+
+		return chosen;
+	}
+
+	public Agent chooseBoss() {
+		int rand;
+		Agent chosen;
+
+		chosen = bosses.get(choose(bosses.size()));
+
+		chosen.addItem(chooseItem());
+		chosen.addItem(chooseItem());
+		rand = randomize();
+		if (0 <= rand && rand < 50) chosen.addItem(chooseItem());
+
+		return chosen;
 	}
 
 	public void encounter() {
 		int option, rand;
 		Attack attack;
 
+		if (bossFight) enemy = chooseBoss();
+		else enemy = chooseEnemy();
+
 		while (true) {
+			checkEffects(player);
+			checkEffects(enemy);
+
 			System.out.println("options:");
 			System.out.println("\t0 - run away");
 			System.out.println("\t1 - attack");
@@ -253,78 +339,55 @@ public class Game implements Serializable {
 						System.out.println("there is no escape!");
 					else
 						System.out.println("you ran away!");
-
 					break;
 
 				case 1:
-					System.out.println("player attacked!");
-
 					rand = randomize();
 
 					if (0 <= rand && rand < 50) {
+						// player attack, enemy attack
 						turn(player, enemy, false, false);
+						if (!enemyDefeated) turn(enemy, player, false, false);
 
-						if (!enemyDefeated) {
-							System.out.println("enemy attacked too!");
-							turn(enemy, player, false, false);
-						}
 					} else if (50 <= rand && rand < 75) {
-						if (!enemyDefeated) {
-							System.out.println("enemy defended!");
-							turn(player, enemy, true, false);
-						}
+						// player attack, enemy defense
+						if (!enemyDefeated) turn(player, enemy, true, false);
+
 					} else {
+						// player attack, enemy ultimate
 						turn(player, enemy, false, false);
-
-						if (!enemyDefeated) {
-							System.out.println("enemy used ultimate!");
-							turn(enemy, player, false, true);
-						}
+						if (!enemyDefeated) turn(enemy, player, false, true);
 					}
-
 					break;
 
 				case 2:
-					System.out.println("player defended!");
-
 					rand = randomize();
 
 					if (0 <= rand && rand < 50) {
-						System.out.println("enemy attacked!");
+						// player defense, enemy attack
 						turn(enemy, player, true, false);
 					} else if (50 <= rand && rand < 75) {
-						System.out.println("enemy defended too!");
-					} else {
-						System.out.println("enemy used ultimate!");
+						// player defense, enemy ulltimate
 						turn(enemy, player, true, true);
-					}
-
+					}	// player defense, enemy defense
 					break;
 
 				case 3:
-					System.out.println("player used ultimate!");
-					
 					rand = randomize();
 
 					if (0 <= rand && rand < 50) {
+						// player ultimate, enemy attack
 						turn(player, enemy, false, true);
+						if (!enemyDefeated) turn(enemy, player, false, false);
 
-						if (!enemyDefeated) {
-							turn(enemy, player, false, false);
-							System.out.println("enemy attacked!");
-						}
 					} else if (50 <= rand && rand < 75) {
-						System.out.println("enemy defended!");
+						// player ultimate, enemy defense
 						turn(player, enemy, true, true);
 					} else {
+						// player ultimate, enemy ultimate
 						turn(player, enemy, false, true);
-
-						if (!enemyDefeated) {
-							System.out.println("enemy used ultimate too!");
-							turn(enemy, player, false, true);
-						}
+						if (!enemyDefeated) turn(enemy, player, false, true);
 					}
-
 					break;
 
 				case 4:
