@@ -7,8 +7,7 @@ import java.util.Random;
 
 public class Game implements Serializable {
 	private transient static Scanner kbd = new Scanner(System.in);
-	private transient Random rand = new Random();
-
+	private transient static Random rand = new Random();
 	private ArrayList<String> story;
 	private ArrayList<Agent> players;
 	private ArrayList<Agent> enemies;
@@ -129,12 +128,12 @@ public class Game implements Serializable {
 				"}";
 	}
 
-	public int choose(int bound) {
+	public int randomInt(int bound) {
 		return rand.nextInt(bound);
 	}
 
-	public int randomize() {
-		return choose(100);
+	public int randomChance() {
+		return randomInt(100);
 	}
 
 	public void checkEffects(Agent agent) {
@@ -174,6 +173,7 @@ public class Game implements Serializable {
 
 					default:
 						System.out.println("invalid effect!");
+						agent.getEffects().remove(i);
 						break;
 				}
 				effect.setDuration(effect.getDuration() - 1);
@@ -185,7 +185,7 @@ public class Game implements Serializable {
 		Effect found;
 		int rand;
 
-		rand = randomize();
+		rand = randomChance();
 
 		if (0 <= rand && rand < 25 && !effect.getName().equals("none")) {
 			
@@ -242,6 +242,32 @@ public class Game implements Serializable {
 		player = players.get(option);
 	}
 
+	public void showItems(Agent agent) {
+		System.out.println("items:");
+		for (int i = 0; i < agent.getItems().size(); i++)
+			System.out.println("\t" + i + " - " + agent.getItems().get(i).toString());
+	}
+
+	public void useItem() {
+		boolean itemExists = false;
+		int option;
+
+		if (player.getItems().size() == 0) {
+			System.out.println("no items to choose from!");
+		} else {
+			showItems(player);
+			System.out.print("option: ");
+			option = kbd.nextInt();
+
+			if (option < 0 || option >= player.getItems().size()) {
+				System.out.println("invalid option!");
+			} else {
+				applyEffect(player.getItems().get(option).getEffect(), player);
+				player.getItems().remove(option);
+			}
+		}
+	}
+
 	public void turn(	Agent attacker, Agent target,
 								boolean defending, boolean ultimate) {
 		Attack attack;
@@ -278,34 +304,34 @@ public class Game implements Serializable {
 		checkHealth();
 	}
 
-	public Item chooseItem() {
-		return items.get(choose(items.size()));
+	public Item randomItem() {
+		return items.get(randomInt(items.size()));
 	}
 
-	public Agent chooseEnemy() {
+	public Agent randomEnemy() {
 		int rand;
 		Agent chosen;
 
-		chosen = enemies.get(choose(enemies.size()));
+		chosen = enemies.get(randomInt(enemies.size()));
 
-		rand = randomize();
-		if (0 <= rand && rand < 25) chosen.addItem(chooseItem());
-		rand = randomize();
-		if (0 <= rand && rand < 25) chosen.addItem(chooseItem());
+		rand = randomChance();
+		if (0 <= rand && rand < 25) chosen.addItem(randomItem());
+		rand = randomChance();
+		if (0 <= rand && rand < 25) chosen.addItem(randomItem());
 
 		return chosen;
 	}
 
-	public Agent chooseBoss() {
+	public Agent randomBoss() {
 		int rand;
 		Agent chosen;
 
-		chosen = bosses.get(choose(bosses.size()));
+		chosen = bosses.get(randomInt(bosses.size()));
 
-		chosen.addItem(chooseItem());
-		chosen.addItem(chooseItem());
-		rand = randomize();
-		if (0 <= rand && rand < 50) chosen.addItem(chooseItem());
+		chosen.addItem(randomItem());
+		chosen.addItem(randomItem());
+		rand = randomChance();
+		if (0 <= rand && rand < 50) chosen.addItem(randomItem());
 
 		return chosen;
 	}
@@ -314,8 +340,8 @@ public class Game implements Serializable {
 		int option, rand;
 		Attack attack;
 
-		if (bossFight) enemy = chooseBoss();
-		else enemy = chooseEnemy();
+		if (bossFight) enemy = randomBoss();
+		else enemy = randomEnemy();
 
 		while (true) {
 			checkEffects(player);
@@ -342,7 +368,7 @@ public class Game implements Serializable {
 					break;
 
 				case 1:
-					rand = randomize();
+					rand = randomChance();
 
 					if (0 <= rand && rand < 50) {
 						// player attack, enemy attack
@@ -361,7 +387,7 @@ public class Game implements Serializable {
 					break;
 
 				case 2:
-					rand = randomize();
+					rand = randomChance();
 
 					if (0 <= rand && rand < 50) {
 						// player defense, enemy attack
@@ -373,7 +399,7 @@ public class Game implements Serializable {
 					break;
 
 				case 3:
-					rand = randomize();
+					rand = randomChance();
 
 					if (0 <= rand && rand < 50) {
 						// player ultimate, enemy attack

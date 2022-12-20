@@ -174,7 +174,7 @@ public class Main {
 		save("./new_game.txt");
 
 
-		load("./new_game.txt");
+		
 	}
 
 	public static void idle() {
@@ -196,6 +196,7 @@ public class Main {
 					break;
 
 				case 1:
+					game.useItem();
 					break;
 
 				case 2:
@@ -222,6 +223,7 @@ public class Main {
 	public static void main(String[] args) {
 		while (true) {
 			newGame();
+			// load("./new_game.txt");
 			game.choosePlayer();
 			game.showStory();
 
