@@ -17,10 +17,11 @@ public class Main {
 			out.writeObject(game);
 			out.close();
 			fileOut.close();
-			System.out.println("game saved in " + file);
+			System.out.println("game saved in \"" + file + "\"");
 
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.out.println("could not open \"" file + "\"!");
+			// e.printStackTrace();
 		}
 	}
 
@@ -36,10 +37,11 @@ public class Main {
 			System.out.println("game loaded from " + file);
 
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.out.println("\"" + file + "\" not found!");
+			// e.printStackTrace();
 		} catch (ClassNotFoundException c) {
-			System.out.println(file + " not found!");
-			c.printStackTrace();
+			System.out.println("\"" + file + "\" not a valid save file!");
+			//c.printStackTrace();
 		}
 	}
 
